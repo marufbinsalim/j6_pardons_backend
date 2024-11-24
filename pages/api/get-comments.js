@@ -1,5 +1,7 @@
 // File: pages/api/contacts.js
 
+import createClient from "@/client";
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     res.status(405).json({ error: "Method not allowed" });
@@ -60,9 +62,28 @@ export default async function handler(req, res) {
         createdAt: new Date(contact.latestEvent.createdAt),
       }));
 
+    let supabase = createClient(req, res);
+
+    const { data: inserted, insertError } = await supabase
+      .from("comments")
+      .insert([...latestCommentsOfContacts]);
+
+    const { data: comments, fetchError } = await supabase
+      .from("comments")
+      .select("*");
+
+    if (insertError) {
+      throw new Error(`Error inserting data: ${insertError}`);
+    }
+
+    if (fetchError) {
+      throw new Error(`Error fetching data: ${fetchError}`);
+    }
+
     res.status(200).json({
       count: latestCommentsOfContacts?.length,
       latestComments: latestCommentsOfContacts,
+      comments: comments,
     });
   } catch (error) {
     console.error("Error fetching comments:", error);
