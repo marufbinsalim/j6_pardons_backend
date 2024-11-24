@@ -16,10 +16,24 @@ export default async function handler(req, res) {
   };
 
   try {
-    const response = await fetch(url, { method: "POST", headers });
+    let body = {
+      isSpam: false,
+      source: [
+        "f_440b542b-05a7-4944-a879-66a6f42cbd24",
+        "f_b81cf8f7-8d22-41c1-a455-2cf22b45f827",
+      ],
+      siteId: [29239694],
+    };
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: body,
+      //   body: JSON.stringify(body),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
+      res.status(500).json({ error: error.message });
     }
 
     const data = await response.json();

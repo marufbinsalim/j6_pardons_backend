@@ -1,0 +1,139 @@
+<div class="progress-container">
+    <div class="supporters" id="supporters">24,161 Supporters</div>
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+    <div class="remaining" id="remaining">75,839 needed to reach 100,000</div>
+</div>
+
+<script>
+    // Inline styles
+    const styles = `
+    .progress-container {
+      position: relative; /* Starts as relative */
+      bottom: 0;
+      z-index: 10;
+      background-color: white;
+      padding: 15px 20px;
+      width: max-content;
+      margin: auto;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      transition: all 0.5s ease-in-out; /* Smooth transition */
+    }
+
+    .progress-container.sticky {
+      position: fixed; /* Change to fixed after delay */
+      bottom: 100px;
+      z-index: 2147483647; /* High z-index */
+    }
+
+    .supporters {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      text-align: left;
+    }
+
+    .progress-bar {
+      background-color: #f0f0f0;
+      border-radius: 10px;
+      height: 16px;
+      position: relative;
+      width: 300px;
+      overflow: hidden;
+      margin: auto;
+    }
+
+    .progress-bar .progress {
+      background-color: #0769ff;
+      height: 100%;
+      width: 0%;
+      position: relative;
+      transition: width 0.5s ease-in-out;
+    }
+
+    .progress-bar .progress::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background-color: #2a7eff; /* Lighter blue */
+      animation: blink 2s infinite;
+      z-index: 100;
+    }
+
+    @keyframes blink {
+      0% { width: 0%; }
+      95% { width: 100%; }
+      100% { width: 0%; }
+    }
+
+    .remaining {
+      color: #888;
+      font-size: 14px;
+      margin-top: 5px;
+      font-weight: bold;
+    }
+  `;
+
+    // Inject styles into the page
+    const styleSheet = document.createElement("style");
+    styleSheet.type = "text/css";
+    styleSheet.innerText = styles;
+    document.head.appendChild(styleSheet);
+
+    // Function to update progress bar values
+    function updateProgressBar(supporters, target) {
+        const supportersElement = document.getElementById("supporters");
+        const progressElement = document.getElementById("progress");
+        const remainingElement = document.getElementById("remaining");
+
+        // Update the text content
+        supportersElement.textContent = `${supporters.toLocaleString()} Supporters`;
+        const remaining = target - supporters;
+        remainingElement.textContent = `${remaining.toLocaleString()} needed to reach ${target.toLocaleString()}`;
+
+        // Calculate the progress percentage
+        const percentage = (supporters / target) * 100;
+
+        // Update the progress bar width
+        progressElement.style.width = `${Math.min(percentage, 100)}%`;
+    }
+
+    // Example: Set values dynamically
+    const numberOfSupporters = 24567;
+    const targetSupporters = 100000;
+
+    // Function to fetch and update supporter count
+    async function fetchAndUpdateSupporterCount() {
+        try {
+            const response = await fetch(
+                "https://j6-pardons-backend-xl73.vercel.app/api/get-supporter-count",
+            );
+            if (!response.ok)
+                throw new Error("Failed to fetch supporter count");
+
+            const data = await response.json();
+            if (data.count) {
+                let previouslyDone = 20000;
+                const numberOfSupporters = data.count + previouslyDone;
+                updateProgressBar(numberOfSupporters, targetSupporters);
+            }
+        } catch (error) {
+            console.error("Error fetching supporter count:", error);
+        }
+    }
+
+    // Poll the API every 10 seconds
+    fetchAndUpdateSupporterCount(); // Initial call
+
+    setInterval(fetchAndUpdateSupporterCount, 10000);
+
+    // Listen for form submission on the entire document
+    document.addEventListener("submit", function (event) {
+        console.log("A form was submitted!");
+    });
+</script>
