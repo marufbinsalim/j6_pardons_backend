@@ -72,11 +72,6 @@ export default async function handler(req, res) {
       .from("comments")
       .select("*");
 
-    // sort the comments by createdAt
-    comments = comments.sort((a, b) => {
-      a.createdAt - b.createdAt;
-    });
-
     if (insertError) {
       throw new Error(`Error inserting data: ${insertError}`);
     }
